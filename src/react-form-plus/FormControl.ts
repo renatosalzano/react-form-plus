@@ -1,29 +1,30 @@
-import { FormCore } from "./FormCore";
 import { isArray } from "./utils/isArray";
-import { AnySchema } from "./Validator";
+import { AnySchema, TestSchema } from "./Validator";
 
 interface Options {
+  schema?: AnySchema;
   disabled?: boolean;
   touched?: boolean;
-  dependency?: Dependency;
+  when?: When;
 }
 
-export interface Dependency {
+export interface When {
   [key: string]: {
     is: string | number | boolean | ((args: any) => boolean);
+    touched?: boolean;
     disabled?: boolean;
-    validator?: AnySchema;
+    schema?: AnySchema;
   };
 }
 
-export type FormControl = [any, AnySchema] | [any, AnySchema, Options];
+export type FormControl = [any, AnySchema | Options];
 
-type TControl = any | FormControl;
+type InitControl = any | FormControl;
 
 export class Control {
   private observer: any[] = [];
 
-  private validator?: AnySchema;
+  private validator?: TestSchema;
 
   private mounted = false;
   private defaultValue: any;
@@ -33,15 +34,15 @@ export class Control {
   public valid = false;
   public error = "";
 
-  public dependency: Dependency = {};
+  public when: When = {};
 
-  constructor(initControl: TControl) {
+  constructor(initControl: InitControl) {
     if (isArray(initControl)) {
-      const [value, validator, options] = [...initControl];
-      this.defaultValue = initControl[0];
+      const [value, rest] = [...initControl] as FormControl;
+      this.defaultValue = value;
       this.value = value;
-      this.validator = validator;
-      if (options) this.checkOptions(options);
+      if (rest instanceof Schema) {
+      }
     } else {
       this.defaultValue = initControl;
       this.value = initControl;
@@ -50,14 +51,13 @@ export class Control {
   private checkOptions(options: Options) {
     if (options.touched) this.touched = true;
     if (options.disabled) this.disabled = true;
-    if (options.dependency) this.dependency = options.dependency;
+    if (options.when) this.when = options.when;
   }
 
   public setValue(value: any) {
     this.touched = true;
     this.value = value;
     if (this.validator) {
-      const { valid, error } = this.validator.validate(value);
       console.log(valid, error);
     }
     this.notify(value);

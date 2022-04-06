@@ -1,16 +1,7 @@
-import {
-  createContext,
-  createElement,
-  FC,
-  Fragment,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { createContext, createElement, FC, Fragment, useContext, useEffect, useRef, useState } from "react";
 
 import { FormCore } from "./FormCore";
-import { Control, Dependency } from "./FormControl";
+import { Control, When } from "./FormControl";
 
 interface Context {
   formCore: FormCore;
@@ -54,13 +45,13 @@ export const useFormControl: UseFormControl = ({ name, defaultValue, disabled = 
       setValue(value);
       this.control.setValue(value);
     },
-    checkDependency(dependency: Dependency) {
+    checkDependency(dependency: When) {
       const hasDependency = Object.keys(dependency).length > 0;
       if (hasDependency) {
         for (let controlName in dependency) {
           if (formCore.get(controlName).isMounted()) {
             formCore.get(controlName).subscribe((value) => {
-              const options = this.control.dependency[controlName];
+              const options = this.control.when[controlName];
               let test = false;
               switch (typeof options.is) {
                 case "number":
@@ -82,7 +73,7 @@ export const useFormControl: UseFormControl = ({ name, defaultValue, disabled = 
       }
     },
     onMount() {
-      const dependency = this.control.dependency;
+      const dependency = this.control.when;
       this.checkDependency(dependency);
     },
   }).current;

@@ -11,20 +11,19 @@ interface Schema {
   };
 }
 
-const option = {
-  disabled: true,
-  dependency: {
-    fristname: {
-      is: true,
-      validator: Validator.string().required("Obbligatorio"),
-    },
-  },
-};
-
 const mySchema: Schema = {
   personal: {
-    fristname: ["", Validator.string().required("Obbligatorio")],
-    lastname: ["", Validator.string(), option],
+    fristname: ["", Validator.string().required("lol")],
+    lastname: [
+      "",
+      {
+        schema: Validator.string(),
+        disabled: true,
+        when: {
+          fristname: { is: true, schema: Validator.string().required() },
+        },
+      },
+    ],
   },
 };
 

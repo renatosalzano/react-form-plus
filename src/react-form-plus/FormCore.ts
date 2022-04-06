@@ -31,6 +31,8 @@ export class FormCore {
     }, []);
   }
 
+  public async validate() {}
+
   public get(name: string): Control {
     try {
       if (this.path[name] instanceof Control) {

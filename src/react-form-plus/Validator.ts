@@ -1,61 +1,51 @@
-
 export type AnySchema = StringSchema;
 
-class StringSchema {
+class Schema<T> {
   private valid = false;
-  private error = "";
-  private rules: ((value: string) => void)[] = [];
-  private checkError() {
-    if (this.error) {
-      return { error: this.error, valid: false };
-    }
-  }
-  private returnSchema() {
-    return { valid: this.valid, error: this.error };
-  }
-  min(minLenght: number, message?: string) {
-    this.rules.push((value: string) => {
-      this.checkError();
-      if (value.length < minLenght) {
-        this.valid = false;
-      } else {
+  private errors: string[] = [];
+  private rules: ((value: T) => void)[] = [];
+  public required(message = "Required") {
+    this.rules.unshift((value: T) => {
+      if (value) {
         this.valid = true;
-      }
-      return this.returnSchema();
-    });
-    return this;
-  }
-  max() {
-    return this;
-  }
-  required(message?: string) {
-    this.rules.unshift((value: any) => {
-      if (value !== "") {
-        this.valid = true;
-        this.error = "";
       } else {
         this.valid = false;
-        this.error = message ? message : "Required";
+        this.errors.unshift(message);
       }
     });
     return this;
   }
-  validate(value: string) {
-    this.error = "";
+  public validate(value: T, abortEarly = false) {
+    this.errors = [];
     this.rules.forEach((rule) => rule(value));
-
-    return this.returnSchema();
+  }
+  public resolve() {
+    return { valid: this.valid, errors: this.errors };
   }
 }
 
+class StringSchema extends Schema<string> {
+  constructor(readonly schema: Schema<string>) {
+    super();
+  }
+  required(message?: string) {
+    return super.required(message);
+  }
+}
 
-
-
+class NumberSchema {}
 
 export class Validator {
   static string() {
-    return new StringSchema();
+    return new StringSchema(new Schema<string>());
   }
 }
 
-export function validation(schema: Validator) {}
+export class TestSchema extends Schema<any> {
+  constructor(readonly schema: Schema<any>) {
+    super();
+  }
+  validate(value: any, abortEarly = false) {
+    return super.validate(value, abortEarly);
+  }
+}
