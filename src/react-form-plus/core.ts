@@ -1,4 +1,13 @@
-import { createContext, createElement, FC, Fragment, useContext, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  createElement,
+  FC,
+  Fragment,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { FormCore } from "./FormCore";
 import { Control, When } from "./FormControl";
@@ -41,40 +50,31 @@ export const useFormControl: UseFormControl = ({ name, defaultValue, disabled = 
   const { formCore } = useFormContext();
   const formControl = useRef({
     control: formCore.get(name).mount(),
+    previous: {},
     set(value: any) {
       setValue(value);
       this.control.setValue(value);
     },
-    checkDependency(dependency: When) {
-      const hasDependency = Object.keys(dependency).length > 0;
-      if (hasDependency) {
-        for (let controlName in dependency) {
-          if (formCore.get(controlName).isMounted()) {
-            formCore.get(controlName).subscribe((value) => {
-              const options = this.control.when[controlName];
-              let test = false;
-              switch (typeof options.is) {
-                case "number":
-                case "string":
-                  test = options.is === value;
-                  break;
-                case "boolean":
-                  test = !!value;
-                  break;
-                case "function":
-                  test = value(value);
-              }
-              if (test) {
-                console.log(options);
+    testDependencies() {
+      if (this.control.dependencies.length > 0) {
+        this.control.dependencies.forEach((name) => {
+          const dep = formCore.get(name);
+          if (dep.isMounted()) {
+            dep.subscribe((value) => {
+              if (this.control.testDependency(name, value)) {
+
+                console.log("TEST WORK");
+              } else {
+                console.log("TEST FAIL");
               }
             });
           }
-        }
+        });
       }
     },
     onMount() {
-      const dependency = this.control.when;
-      this.checkDependency(dependency);
+      this.testDependencies();
+      this.control.
     },
   }).current;
 

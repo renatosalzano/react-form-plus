@@ -10,18 +10,18 @@ export class FormCore {
     try {
       if (typeof schema !== "object") throw new Error("Schema must be an object");
       this.values = schema;
-      this.initSchema(schema);
+      this.initController(schema);
       console.log(this.path);
     } catch (err) {
       console.error(err);
     }
   }
-  private initSchema(object: { [key: string]: any }, prefix?: string) {
+  private initController(object: { [key: string]: any }, prefix?: string) {
     const keys = Object.keys(object);
     prefix = prefix ? prefix + "." : "";
     return keys.reduce((result: string[], key) => {
       if (typeof object[key] === "object" && !Array.isArray(object[key])) {
-        result = [...result, ...this.initSchema(object[key], prefix + key)];
+        result = [...result, ...this.initController(object[key], prefix + key)];
       } else {
         // eslint-disable-next-line no-eval
         this.path[key] = eval(`this.values.${prefix + key}`);
@@ -37,7 +37,7 @@ export class FormCore {
     try {
       if (this.path[name] instanceof Control) {
         return this.path[name];
-      } else throw new Error(`${name} undefined`);
+      } else throw new Error(`FORM CORE:\n ${name} is undefined`);
     } catch (error) {
       console.error(error);
       return new Control("ERROR");

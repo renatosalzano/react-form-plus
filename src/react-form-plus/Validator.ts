@@ -1,9 +1,12 @@
 export type AnySchema = StringSchema;
 
+type Rules<T> = ((value: T) => void)[];
+
 class Schema<T> {
   private valid = false;
   private errors: string[] = [];
   private rules: ((value: T) => void)[] = [];
+
   public required(message = "Required") {
     this.rules.unshift((value: T) => {
       if (value) {
@@ -25,9 +28,6 @@ class Schema<T> {
 }
 
 class StringSchema extends Schema<string> {
-  constructor(readonly schema: Schema<string>) {
-    super();
-  }
   required(message?: string) {
     return super.required(message);
   }
@@ -37,14 +37,11 @@ class NumberSchema {}
 
 export class Validator {
   static string() {
-    return new StringSchema(new Schema<string>());
+    return new StringSchema();
   }
 }
 
 export class TestSchema extends Schema<any> {
-  constructor(readonly schema: Schema<any>) {
-    super();
-  }
   validate(value: any, abortEarly = false) {
     return super.validate(value, abortEarly);
   }

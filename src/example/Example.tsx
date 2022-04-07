@@ -20,7 +20,7 @@ const mySchema: Schema = {
         schema: Validator.string(),
         disabled: true,
         when: {
-          fristname: { is: true, schema: Validator.string().required() },
+          fristname: { is: (value) => value === "paolo", schema: Validator.string().required() },
         },
       },
     ],
