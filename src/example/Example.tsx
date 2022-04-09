@@ -8,22 +8,18 @@ interface Schema {
   personal: {
     fristname: FormControl;
     lastname: FormControl;
+    alias: FormControl;
   };
 }
 
 const mySchema: Schema = {
   personal: {
-    fristname: ["", Validator.string().required("lol")],
-    lastname: [
-      "",
-      {
-        schema: Validator.string(),
-        disabled: true,
-        when: {
-          fristname: { is: (value) => value === "paolo", schema: Validator.string().required() },
-        },
-      },
-    ],
+    fristname: new FormControl("pippo"),
+    lastname: new FormControl(""),
+    alias: new FormControl("", { validator: Validator.string(), disabled: true })
+      .when(["fristname", "lastname"])
+      .map({ fristname: "pippo", lastname: "baudo" })
+      .then({ disabled: false }),
   },
 };
 
@@ -32,6 +28,7 @@ export const Example: FC = () => {
     <FormStore schema={mySchema}>
       <ControlledInput name="fristname" value="" />
       <ControlledInput name="lastname" value="" />
+      <ControlledInput name="alias" value="" />
     </FormStore>
   );
 };

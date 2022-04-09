@@ -27,13 +27,13 @@ class Schema<T> {
   }
 }
 
-class StringSchema extends Schema<string> {
+export class StringSchema extends Schema<string> {
   required(message?: string) {
     return super.required(message);
   }
 }
 
-class NumberSchema {}
+export class NumberSchema {}
 
 export class Validator {
   static string() {

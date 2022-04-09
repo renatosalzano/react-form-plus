@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { useFormControl } from "../react-form-plus/core";
+import { Validator } from "../react-form-plus/Validator";
 interface Props {
   name: string;
   value: string;
@@ -7,12 +8,7 @@ interface Props {
 export const ControlledInput: FC<Props> = ({ name, value }) => {
   const { control } = useFormControl({
     name,
-    defaultValue: value,
-    rule: {
-      required: "obbligatorio",
-      min: 5,
-      max: 16,
-    },
+    value,
   });
 
   function setClassname() {

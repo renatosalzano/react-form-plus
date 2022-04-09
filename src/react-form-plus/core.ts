@@ -8,9 +8,10 @@ import {
   useRef,
   useState,
 } from "react";
+import { FormControlOptions } from "./FormControl";
 
 import { FormCore } from "./FormCore";
-import { Control, When } from "./FormControl";
+import { AnySchema } from "./Validator";
 
 interface Context {
   formCore: FormCore;
@@ -29,52 +30,57 @@ export const FormStore: FC<FormStoreProps> = ({ schema, children }) => {
   return createElement(FormContext.Provider, { value: { formCore } }, children);
 };
 
+
+interface Then {
+  value?: any;
+  validator?: AnySchema;
+  touched?: boolean;
+  disabled?: boolean;
+  requiredGroup?: 1 | 2 | 3 | 4 | 5;
+  error?: string | string[];
+  reset?: boolean;
+}
 export interface FormControlProp {
   name: string;
-  defaultValue: any;
+  value: any;
   disabled?: boolean;
-  rule?: {
-    required?: boolean | string;
-    min?: number;
-    max?: number;
+  touched?: boolean;
+  validator?: AnySchema;
+  //when: [string | string[], "is" | "some" | "every", Then];
+  when?: {
+    field: string | string[];
+    is?: () => void;
+    some?: () => void;
+    map?: () => void;
+    then(): void;
   };
 }
 
-type UseFormControl = ({ name, defaultValue, rule }: FormControlProp) => any;
+type UseFormControl = ({ name, value, disabled, touched, validator }: FormControlProp) => any;
 
 /* 
 ----- FORM CONTROLLER -----
 */
 
-export const useFormControl: UseFormControl = ({ name, defaultValue, disabled = false, rule }) => {
+export const useFormControl: UseFormControl = ({
+  name,
+  value,
+  disabled = false,
+  touched = false,
+}) => {
   const { formCore } = useFormContext();
   const formControl = useRef({
-    control: formCore.get(name).mount(),
+    control: formCore.get(name),
     previous: {},
     set(value: any) {
       setValue(value);
       this.control.setValue(value);
     },
-    testDependencies() {
-      if (this.control.dependencies.length > 0) {
-        this.control.dependencies.forEach((name) => {
-          const dep = formCore.get(name);
-          if (dep.isMounted()) {
-            dep.subscribe((value) => {
-              if (this.control.testDependency(name, value)) {
-
-                console.log("TEST WORK");
-              } else {
-                console.log("TEST FAIL");
-              }
-            });
-          }
-        });
-      }
-    },
     onMount() {
-      this.testDependencies();
-      this.control.
+      this.control.changes.subscribe((change) => {
+        setValue(change.value);
+        setDisabled(change.disabled);
+      });
     },
   }).current;
 
