@@ -1,16 +1,8 @@
-import {
-  createContext,
-  createElement,
-  FC,
-  Fragment,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { createContext, createElement, FC, Fragment, useContext, useEffect, useRef, useState } from "react";
 import { FormControlOptions } from "./FormControl";
 
 import { FormCore } from "./FormCore";
+import { useDebounce } from "./util/useDebounce";
 import { AnySchema } from "./Validator";
 
 interface Context {
@@ -30,7 +22,6 @@ export const FormStore: FC<FormStoreProps> = ({ schema, children }) => {
   return createElement(FormContext.Provider, { value: { formCore } }, children);
 };
 
-
 interface Then {
   value?: any;
   validator?: AnySchema;
@@ -46,14 +37,6 @@ export interface FormControlProp {
   disabled?: boolean;
   touched?: boolean;
   validator?: AnySchema;
-  //when: [string | string[], "is" | "some" | "every", Then];
-  when?: {
-    field: string | string[];
-    is?: () => void;
-    some?: () => void;
-    map?: () => void;
-    then(): void;
-  };
 }
 
 type UseFormControl = ({ name, value, disabled, touched, validator }: FormControlProp) => any;
@@ -62,12 +45,21 @@ type UseFormControl = ({ name, value, disabled, touched, validator }: FormContro
 ----- FORM CONTROLLER -----
 */
 
-export const useFormControl: UseFormControl = ({
-  name,
-  value,
-  disabled = false,
-  touched = false,
-}) => {
+/* const useDebounce = () => {
+  const ref = useRef<{
+    timer?: NodeJS.Timeout;
+    debounce(fn: (...args: any[]) => any, delay: number): void;
+  }>({
+    timer: undefined,
+    debounce(fn, delay) {
+      if (this.timer) clearTimeout(this.timer);
+      this.timer = setTimeout(fn, delay);
+    },
+  });
+  return ref.current.debounce.bind(ref.current);
+}; */
+
+export const useFormControl: UseFormControl = ({ name, value, disabled = false, touched = false }) => {
   const { formCore } = useFormContext();
   const formControl = useRef({
     control: formCore.get(name),
@@ -91,6 +83,8 @@ export const useFormControl: UseFormControl = ({
     formControl.onMount();
   }, [formControl, name]);
 
+  const debounce = useDebounce();
+
   return {
     control: {
       name,
@@ -103,7 +97,17 @@ export const useFormControl: UseFormControl = ({
         } else {
           value = event;
         }
+
         formControl.set(value);
+        debounce(() => console.log("debounce"), 500);
+        debounce(() => console.log("debounce"), 600);
+        debounce(() => console.log("debounce"), 700);
+        debounce(() => console.log("anytime"), 1000);
+        debounce(() => console.log("cancel me"), 1500);
+        debounce(() => console.log("im speeed"), 5000).call();
+        if (value === "test") {
+          debounce(() => console.log("cancel me"), 1500).cancel();
+        }
       },
     },
   };
